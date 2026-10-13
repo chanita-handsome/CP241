@@ -368,7 +368,7 @@ STAGES.push({
   <p>🎮 กดช่อง <b>[ ]</b> ที่คิดว่าควรแทรกลูกค้าในมือ ถ้าผิดเสียหัวใจ ❤️ (มี 3 ดวง)</p>`,
   init(){this.start=shuffle(pickDistinct(7,9));this.hints=0;this.reset();},
   reset(){
-    this.sorted=this.start.slice(0,1);    // คนแรกนั่งแล้ว (ถาดที่เรียงแล้วมีแค่ 1 คน)
+    this.sorted=[this.start];this.k=1;this.hearts=3;this.hs=-1;this.render();
     say('ลูกค้าคนแรกนั่งแล้วค่ะ คนต่อไปมาแล้ว! ลองเทียบจากขวาไปซ้ายนะคะ 🃏');
   },
   render(){
