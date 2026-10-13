@@ -142,3 +142,14 @@ td,th{border:1px solid var(--pink2); padding:4px 6px; text-align:left}
   .card.mini{width:30px}
   .card.mini .em{font-size:12px}
 }
+
+/* ===== ด่าน Merge Sort ===== */
+.grp.act{border-color:var(--deep); background:#fff0f6; box-shadow:0 0 0 3px var(--pink2)}   /* สองถาดที่กำลังรวม */
+.cmpbar{
+  text-align:center; background:#fff; border:2px solid var(--pink2); border-radius:14px;
+  padding:6px 10px; margin:6px auto; max-width:520px; font-size:15px;
+}
+.cmpbar b{color:var(--deep); font-size:20px}
+.q .row{flex-wrap:wrap}
+.q.pick{cursor:pointer; transition:background .15s, border-color .15s}
+.q.pick:hover{background:#fff0f6; border-color:var(--deep)}
