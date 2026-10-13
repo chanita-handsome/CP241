@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Moe Moe Café Sort ☕🎀</title>
+  <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <div class="logo">🎀 Moe Moe Café Sort ☕</div>
+      <div id="top"></div>
+    </header>
+    <main id="screen"></main>
+  </div>
+
+  <!-- หน้าต่าง popup (คู่มือ / ผลลัพธ์ / สมุดจด) -->
+  <div id="modal" class="hidden"><div class="modal-box" id="mbox"></div></div>
+
+  <!-- ต้องเป็น script ธรรมดา (ไม่ใช่ type="module") เพราะใช้ onclick="..." ในโค้ด -->
+  <script src="script.js"></script>
+</body>
+</html>

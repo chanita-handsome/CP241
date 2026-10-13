@@ -1,0 +1,144 @@
+/* ===== ตัวแปรสี ===== */
+:root{
+  --pink:#ff8fb8; --pink2:#ffd1e3; --deep:#ff4f8b;
+  --brown:#7a4a5a; --mint:#7fdcb8; --yellow:#ffd966;
+}
+*{box-sizing:border-box}
+
+/* ===== พื้นหลังและโครงหน้า ===== */
+body{
+  margin:0; min-height:100vh; color:var(--brown);
+  font-family:'Mali','Sarabun','Noto Sans Thai',system-ui,sans-serif;
+  background:#ffe6f0 radial-gradient(circle at 20px 20px,#fff 3px,transparent 4px) 0 0/40px 40px;
+}
+#app{max-width:920px; margin:0 auto; padding:12px}
+header{
+  display:flex; justify-content:space-between; align-items:center;
+  background:#fff; border:3px solid var(--pink); border-radius:20px;
+  padding:8px 16px; margin-bottom:12px; box-shadow:0 4px 0 var(--pink2);
+}
+.logo{font-weight:700; font-size:20px; color:var(--deep)}
+#top{font-weight:600}
+.panel{
+  background:rgba(255,255,255,.92); border:3px solid var(--pink);
+  border-radius:24px; padding:14px; box-shadow:0 5px 0 var(--pink2);
+}
+
+/* ===== น้องกระต่ายผู้ช่วย + กล่องข้อความ ===== */
+.mentor{display:flex; gap:10px; align-items:center; margin-bottom:10px}
+.avatar{
+  font-size:44px; background:#fff; border:3px solid var(--pink); border-radius:50%;
+  width:70px; height:70px; display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+}
+.bubble{
+  background:#fff; border:3px solid var(--pink); border-radius:18px;
+  padding:8px 14px; font-size:15px; line-height:1.5; position:relative; flex:1;
+}
+
+/* ===== หัวด่าน / ข้อมูลสถานะ ===== */
+.stagehead{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px}
+.stagehead h2{margin:0; font-size:18px; text-align:center; color:var(--deep)}
+.chips{display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:6px 0}
+.chip{background:#fff3f8; border:2px solid var(--pink2); border-radius:999px; padding:2px 12px; font-size:14px}
+
+/* ===== กระดานเล่น ===== */
+.board{
+  background:linear-gradient(#fff8fb,#ffeef5); border:3px dashed var(--pink);
+  border-radius:20px; padding:10px; min-height:260px;
+}
+.lbl{font-size:14px; font-weight:600; margin:8px 0 0; text-align:center}
+.row{display:flex; align-items:flex-end; justify-content:center; gap:8px; min-height:130px; padding:8px 4px}
+.wait{gap:18px; min-height:80px; flex-wrap:wrap}
+.grp{display:flex; gap:4px; align-items:flex-end; background:#fff; border:2px solid var(--pink2); border-radius:12px; padding:4px}
+.duo{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
+.q{flex:1; min-width:230px; background:#fff; border:2px solid var(--pink2); border-radius:16px; padding:4px 8px}
+.qn{font-weight:700; color:var(--deep); text-align:center}
+
+/* ===== การ์ดขนม (ความสูงถูกตั้งจาก JS ตามค่าตัวเลข) ===== */
+.card{
+  flex:0 0 auto; width:62px; border-radius:14px;
+  background:linear-gradient(#fff,#ffe9f2); border:3px solid var(--pink);
+  display:flex; flex-direction:column; align-items:center; justify-content:space-between;
+  padding:4px 0; cursor:pointer; user-select:none; transition:box-shadow .2s;
+}
+.card .em{font-size:26px; line-height:1.1}
+.card b{background:var(--pink); color:#fff; border-radius:10px; min-width:28px; text-align:center; font-size:16px; padding:0 5px}
+.card.mini{width:42px; padding:2px 0; border-width:2px; border-radius:10px; cursor:default}
+.card.mini .em{font-size:16px}
+.card.mini b{font-size:12px; min-width:22px}
+.card.sel{outline:4px solid var(--deep); box-shadow:0 0 14px var(--deep)}        /* ใบที่เลือกอยู่ */
+.card.hint{animation:blink .8s infinite}                                          /* คำใบ้ */
+.card.lock{border-color:var(--mint); background:linear-gradient(#fff,#dcfbee)}    /* เข้าที่แล้ว */
+.card.lock b{background:#43c59e}
+.card.cmp{border-color:#5bb8ff; background:#e3f4ff}                               /* คู่ที่ Bubble กำลังเทียบ */
+.card.cmp b{background:#5bb8ff}
+.card.front{outline:3px dashed var(--deep); cursor:pointer}                       /* หัวแถวใน Merge */
+.card.static{cursor:default}
+@keyframes blink{50%{box-shadow:0 0 0 6px #ffd24d; border-color:#ffb300}}
+
+/* ช่องแทรก (ด่าน Insertion) */
+.slot{
+  align-self:stretch; min-height:90px; width:22px; border:2px dashed var(--pink);
+  border-radius:10px; background:#fff; color:var(--pink); cursor:pointer; font-size:14px; padding:0;
+}
+.slot:hover{background:var(--pink2)}
+.slot.hint{animation:blink .8s infinite}
+
+/* ===== ปุ่ม ===== */
+.ctrl{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:10px}
+.btn{
+  font-family:inherit; font-size:15px; font-weight:600; background:var(--pink); color:#fff;
+  border:none; border-radius:999px; padding:8px 18px; cursor:pointer; box-shadow:0 4px 0 #e0689a;
+}
+.btn:active{transform:translateY(3px); box-shadow:0 1px 0 #e0689a}
+.btn.ghost{background:#fff; color:var(--deep); border:2px solid var(--pink); box-shadow:0 4px 0 var(--pink2)}
+.btn.big{font-size:20px; padding:12px 28px}
+.btn:disabled{opacity:.5}
+
+/* ===== กล่องอธิบายผล ===== */
+.explain{margin:8px auto; max-width:640px; border-radius:14px; padding:8px 12px; font-size:14px; line-height:1.6}
+.okk{background:#e2fbf1; border:2px solid var(--mint)}
+.bad{background:#ffe9ec; border:2px solid #ff8a9b}
+
+/* ===== หน้าแรก / แผนที่ด่าน ===== */
+.title{text-align:center; padding:24px 10px}
+.title h1{font-size:34px; margin:6px 0; color:var(--deep)}
+.hero{font-size:60px}
+.map{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:12px; margin-top:10px}
+.stg{
+  background:#fff; border:3px solid var(--pink); border-radius:20px; padding:12px;
+  cursor:pointer; box-shadow:0 4px 0 var(--pink2); transition:transform .15s;
+}
+.stg:hover{transform:translateY(-3px)}
+.stg .ic{font-size:34px}
+.stg h3{margin:2px 0; font-size:16px}
+.stg small{color:#a5788a}
+
+/* ===== Modal ===== */
+#modal{position:fixed; inset:0; background:rgba(122,74,90,.5); display:flex; align-items:center; justify-content:center; z-index:10; padding:14px}
+#modal.hidden{display:none}
+.modal-box{
+  background:#fff; border:4px solid var(--pink); border-radius:26px; max-width:540px; width:100%;
+  padding:18px 20px; max-height:92vh; overflow:auto; line-height:1.6; font-size:15px;
+}
+.modal-box h2{margin:0 0 6px; color:var(--deep)}
+.modal-box pre{background:#fff3f8; border-radius:12px; padding:8px 12px; font-size:13px; overflow:auto; font-family:ui-monospace,Consolas,monospace}
+.stars{font-size:36px; text-align:center}
+.mbtns{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:10px}
+table{border-collapse:collapse; width:100%; font-size:13px}
+td,th{border:1px solid var(--pink2); padding:4px 6px; text-align:left}
+
+/* ===== เอฟเฟกต์สั่นเมื่อตอบผิด ===== */
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)} 75%{transform:translateX(8px)}}
+
+/* ===== มือถือ ===== */
+@media(max-width:560px){
+  .card{width:44px}
+  .card .em{font-size:18px}
+  .card b{font-size:13px; min-width:20px}
+  .row{gap:4px}
+  .slot{width:14px}
+  .card.mini{width:30px}
+  .card.mini .em{font-size:12px}
+}
