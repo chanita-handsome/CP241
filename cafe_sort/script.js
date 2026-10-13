@@ -68,11 +68,54 @@ function insertionPasses(input,k){
 // ตำแหน่งแทรกที่ถูกต้อง = จำนวนตัวในถาดที่น้อยกว่า key (ใช้ตรวจคำตอบด่าน Insertion)
 function insertionPosition(sortedPart,key){ return sortedPart.filter(x=>x<key).length; }
 
-/* ---------- MERGE (ขั้น "รวม" ของ Merge Sort) ----------
-   แนวคิด: มีสองลิสต์ที่เรียงแล้ว เทียบ "หัวแถว" ของสองลิสต์ ตัวที่น้อยกว่าไปก่อน
-   ทำซ้ำจนหมด → ได้ลิสต์ใหญ่ที่เรียงแล้ว (O(n)) แล้วรวมต่อเป็นชั้น ๆ ได้ O(n log n)
-   ฟังก์ชันนี้บอกว่า "ควรหยิบจาก A หรือ B" ในขั้นนี้ */
-function mergeChoice(A,B){ return A < B ? 'A' : 'B'; }
+/* ---------- MERGE SORT (ฉบับสมบูรณ์) ----------
+   Merge Sort ใช้แนวคิด "แบ่งแล้วปกครอง" (Divide & Conquer) 3 ขั้น:
+     1) DIVIDE  : แบ่งลิสต์ครึ่งหนึ่ง ทำซ้ำจนเหลือชิ้นละ 1 ตัว (1 ตัว = เรียงแล้วเสมอ)
+     2) CONQUER : เรียงแต่ละครึ่งด้วยการเรียกตัวเองซ้ำ (recursion)
+     3) MERGE   : รวมสองครึ่งที่เรียงแล้วให้เป็นลิสต์เดียวที่เรียงแล้ว
+   เวลา O(n log n): มี log2(n) ชั้น และแต่ละชั้น merge รวมกันใช้ O(n) */
+
+// merge: รวมสองลิสต์ที่ "เรียงแล้ว" โดยเทียบเฉพาะ "หัวแถว" ของสองฝั่ง
+function merge(A,B){
+  const out=[]; let i=0, j=0;
+  while(i<A.length && j<B.length){      // ตราบใดที่ทั้งสองฝั่งยังมีของ
+    if(A[i] < B[j]) out.push(A[i++]);   // หัวแถว A น้อยกว่า → หยิบ A
+    else            out.push(B[j++]);   // ไม่งั้นหยิบ B
+  }
+  while(i<A.length) out.push(A[i++]);   // ฝั่งหนึ่งหมดแล้ว ที่เหลือเรียงอยู่แล้ว ต่อท้ายได้เลย
+  while(j<B.length) out.push(B[j++]);
+  return out;
+}
+
+// mergeSort: แบ่งครึ่ง → เรียงแต่ละครึ่ง (recursion) → merge
+function mergeSort(a){
+  if(a.length<=1) return [...a];                 // base case: 0-1 ตัว เรียงแล้ว
+  const mid=a.length>>1;                         // จุดแบ่งครึ่ง
+  return merge(mergeSort(a.slice(0,mid)), mergeSort(a.slice(mid)));
+}
+
+// แผนการ merge ของ mergeSort สำหรับข้อมูล n ตัว (ใช้กำหนดว่าด่านต้องรวมถาดคู่ไหนบ้าง)
+// เก็บเป็นช่วง [lo,hi) พร้อมจุดแบ่ง mid แล้วเรียงตามขนาดช่วง (เล็ก → ใหญ่)
+// ซึ่งเท่ากับการไล่ต้นไม้ของการแบ่งจาก "ล่างขึ้นบน" ทีละชั้น
+function mergeSortPlan(n){
+  const plan=[];
+  (function rec(lo,hi){
+    if(hi-lo<=1) return;                         // ชิ้นเดียว ไม่ต้อง merge
+    const mid=(lo+hi)>>1;
+    rec(lo,mid); rec(mid,hi);                    // แบ่งซ้าย/ขวาก่อน
+    plan.push({lo,mid,hi});                      // แล้วค่อยบันทึกว่าต้อง merge ช่วงนี้
+  })(0,n);
+  return plan.sort((x,y)=>(x.hi-x.lo)-(y.hi-y.lo));   // เรียงทีละชั้น (sort ของ JS เป็น stable)
+}
+
+// head(a) = ตัวแรกของลิสต์ (หัวแถว) ใช้ .at(0) แทนการเขียนวงเล็บเหลี่ยมตรง ๆ
+const head = a => a.at(0);
+
+// ตรวจคำตอบในด่าน: ควรหยิบหัวแถวจากถาด A หรือ B
+// เทียบ "ตัวเลขหัวแถว" ไม่ใช่เทียบทั้ง array (ไม่งั้น JS จะเทียบเป็นข้อความ)
+function mergeChoice(A,B){
+  return head(A) < head(B) ? 'A' : 'B';    // ตัวที่น้อยกว่าไปก่อน
+}
 
 /* ---------- ฟังก์ชันช่วยวิเคราะห์ ---------- */
 // นับ inversions = จำนวนคู่ (i<j) ที่ a[i] > a[j]
@@ -305,9 +348,10 @@ STAGES.push({
     } else if(this.moves>=this.limit) later(()=>lose('ใช้ครบ 6 ครั้งแล้วแต่ยังไม่เรียง! ทุกครั้งที่สลับ ต้องวาง "ตัวเล็กสุดของส่วนที่เหลือ" ลงช่องที่ถูกต้องให้ได้ 1 ตัวนะคะ'));
   });},
   hint(){
-    const p=selectionNextSwap(this.a); if(!p)return;                   // ใช้ Selection Sort จริงหา step ถัดไป
+    const p=selectionNextSwap(this.a); if(!p)return;      // ใช้ Selection Sort จริงหา step ถัดไป
+    const [from,to]=p;                                    // from = ช่องที่ต้องเติม, to = ตำแหน่งตัวเล็กสุด
     this.hints++;this.hp=p;this.render();
-    say(`ช่อง <b>${p+1}</b> ยังไม่ใช่ตัวเล็กสุดของส่วนที่เหลือ → ตัวเล็กสุดคือ <b>${this.a[p]}</b> สลับมาไว้ช่อง ${p+1} ค่ะ 🎯`);
+    say(`ช่อง <b>${from+1}</b> ยังไม่ใช่ตัวเล็กสุดของส่วนที่เหลือ → ตัวเล็กสุดคือ <b>${this.a.at(to)}</b> สลับมาไว้ช่อง ${from+1} ค่ะ 🎯`);
   }
 });
 
@@ -324,7 +368,7 @@ STAGES.push({
   <p>🎮 กดช่อง <b>[ ]</b> ที่คิดว่าควรแทรกลูกค้าในมือ ถ้าผิดเสียหัวใจ ❤️ (มี 3 ดวง)</p>`,
   init(){this.start=shuffle(pickDistinct(7,9));this.hints=0;this.reset();},
   reset(){
-    this.sorted=[this.start];this.k=1;this.hearts=3;this.hs=-1;this.render();
+    this.sorted=this.start.slice(0,1);    // คนแรกนั่งแล้ว (ถาดที่เรียงแล้วมีแค่ 1 คน)
     say('ลูกค้าคนแรกนั่งแล้วค่ะ คนต่อไปมาแล้ว! ลองเทียบจากขวาไปซ้ายนะคะ 🃏');
   },
   render(){
@@ -361,68 +405,163 @@ STAGES.push({
   hint(){this.hints++;this.hs=insertionPosition(this.sorted,this.start[this.k]);this.render();say('ช่องที่กะพริบคือจุดแทรกที่ถูกต้องค่ะ 💡');}
 });
 
-/* ---------- ด่าน 4: MERGE — รวมถาดที่เรียงแล้ว ---------- */
+/* ---------- ด่าน 4: MERGE SORT — แบ่ง (Divide) แล้วรวม (Merge) ---------- */
 STAGES.push({
   name:'รวมถาดชาสองฝั่ง', algo:'Merge Sort', icon:'🍵',
-  tut:`<p>ถาดชา 4 ถาด แต่ละถาด <b>เรียงเสร็จแล้ว</b> (ถาดละ 2 แก้ว) ต้องรวมให้เป็นถาดใหญ่ 1 ถาดที่เรียงสมบูรณ์</p>
-  <p><b>Merge Sort</b>: แบ่งเป็นชิ้นเล็ก เรียง แล้ว <b>merge</b>: เทียบ "หัวแถว" ของสองถาด ตัวที่น้อยกว่าไปก่อน ทำซ้ำจนหมด เมื่อถาดหนึ่งหมด ที่เหลือของอีกถาดต่อท้ายได้เลย</p>
-<pre>merge(A, B):
-  while A และ B ไม่ว่าง:
-    ถ้า A < B → หยิบ A ลงผลลัพธ์
-    ไม่งั้น → หยิบ B
-  ต่อท้ายตัวที่เหลือ</pre>
-  <p>🎮 กดที่ <b>หัวแถว</b> (ขอบประ) ของถาดที่มีค่า <b>น้อยกว่า</b> มี ❤️ 4 ดวง</p>`,
+  tut:`<p>มีแก้วชา 8 แก้ววางสะเปะสะปะ! <b>Merge Sort</b> เรียงด้วย 2 ขั้น:</p>
+  <p>✂️ <b>1) แบ่ง</b>: ผ่าครึ่งถาดไปเรื่อย ๆ จนเหลือถาดละ 1 แก้ว (ถาด 1 แก้ว "เรียงแล้ว" เสมอ)<br>
+  🔀 <b>2) รวม (merge)</b>: เอาถาดที่เรียงแล้วสองถาดมารวมกัน</p>
+  <p><b>วิธีรวม:</b> ดูแค่ <b>"หัวแถว"</b> (แก้วหน้าสุด) ของสองถาด ตัวไหน<b>น้อยกว่า</b>ไปลงถาดผลลัพธ์ก่อน ทำซ้ำจนหมด</p>
+<pre>ตัวอย่าง  ถาด A = 3, 8   ถาด B = 5, 9
+เทียบ 3 กับ 5 → หยิบ 3   ผลลัพธ์: 3
+เทียบ 8 กับ 5 → หยิบ 5   ผลลัพธ์: 3, 5
+เทียบ 8 กับ 9 → หยิบ 8   ผลลัพธ์: 3, 5, 8
+ถาด B เหลือ 9 ต่อท้ายได้เลย → ผลลัพธ์: 3, 5, 8, 9</pre>
+  <p>🎮 กดปุ่มแบ่งถาดให้ครบ แล้วกดที่ <b>ถาดที่หัวแถวน้อยกว่า</b> เสียหัวใจ ❤️ เมื่อเลือกผิด (มี 4 ดวง)</p>`,
+
   init(){
-    const v=shuffle(pickDistinct(8,20));this.init0=[];
-    for(let i=0;i<8;i+=2)this.init0.push([v[i],v[i+1]].sort((a,b)=>a-b));   // 4 ถาดที่เรียงแล้ว
-    this.hints=0;this.reset();
+    this.start=shuffle(pickDistinct(8,20));      // แก้ว 8 ใบ (n เป็นกำลังของ 2 จึงแบ่งครึ่งได้พอดี)
+    this.hints=0; this.reset();
   },
   reset(){
-    this.final=false;                                   // (แก้บั๊ก) ต้องรีเซ็ตทุกครั้งที่เริ่มใหม่
-    this.runs=this.init0.map(r=>[...r]);this.A=this.runs.shift();this.B=this.runs.shift();
-    this.out=[];this.hearts=4;this.m=1;this.hp=null;this.render();
-    say('รวมถาดทีละคู่ เทียบแค่ "หัวแถว" ของสองถาดก็พอค่ะ! 🍵');
+    this.final=false;                            // ต้องรีเซ็ตทุกครั้งที่เริ่มใหม่
+    this.phase='divide'; this.lvl=0;             // เริ่มที่ขั้นแบ่ง
+    this.groups=this.start.map(v=>[v]);          // ถาดทั้งหมด (ตอนเริ่มรวมจะเป็นถาดละ 1 แก้ว)
+    this.plan=mergeSortPlan(this.start.length);  // ลำดับการรวมที่ต้องทำ
+    this.ti=0; this.A=[]; this.B=[]; this.out=[];
+    this.hearts=4; this.hp=null; this.idx=0;
+    this.render();
+    say('เริ่มจากขั้น ✂️ แบ่งถาดก่อนนะคะ กดปุ่ม "แบ่งครึ่ง" ได้เลย! 🍵');
   },
+
+  // หาตำแหน่งของถาดซ้ายใน this.groups จากตำแหน่งเริ่มต้น lo
+  idxOf(lo){ let s=0; for(let k=0;k<this.groups.length;k++){ if(s===lo) return k; s+=this.groups[k].length; } return -1; },
+
+  // โหลดงาน merge ชิ้นถัดไป: หยิบสองถาดที่ติดกันมาวางเป็น A และ B
+  loadTask(){
+    const t=this.plan[this.ti];
+    this.idx=this.idxOf(t.lo);
+    this.A=[...this.groups[this.idx]];
+    this.B=[...this.groups[this.idx+1]];
+    this.out=[]; this.hp=null;
+  },
+
+  divide(){                                      // ปุ่มแบ่งครึ่ง
+    const L=Math.log2(this.start.length);
+    if(this.lvl>=L) return;
+    this.lvl++; this.render();
+    const size=this.start.length>>this.lvl;
+    say(this.lvl<L
+      ? `แบ่งครึ่งแล้ว! ตอนนี้ถาดละ <b>${size}</b> แก้ว แบ่งต่อได้อีกค่ะ ✂️`
+      : `เหลือถาดละ <b>1 แก้ว</b> แล้ว! ถาด 1 แก้ว "เรียงแล้ว" โดยอัตโนมัติ ต่อไปคือขั้น 🔀 รวม กดปุ่มเริ่มรวมได้เลย`);
+  },
+  startMerge(){                                  // ปุ่มเริ่มรวม
+    this.phase='merge'; this.ti=0; this.loadTask(); this.render();
+    say('ขั้นรวม! ดูแค่ <b>หัวแถว</b> ของ A กับ B แล้วกดถาดที่หัวแถว <b>น้อยกว่า</b> ค่ะ 🔀');
+  },
+
   render(){
-    // การ์ดหัวแถว (i===0) เท่านั้นที่กดได้ (data-q) และมีขอบประ
-    const mk=(arr,q)=>arr.map((v,i)=>cardHTML(v,{maxV:20,cls:(i===0?'front ':'')+(this.hp===q&&i===0?'hint':''),attr:i===0?`data-q="${q}"`:''})).join('');
-    $('#info').innerHTML=chip(`❤️ ${hearts(this.hearts,4)}`)+chip(`🔀 การรวมครั้งที่ ${Math.min(this.m,3)}/3`)+chip(`💡 ใช้คำใบ้ ${this.hints}`);
-    flip(()=>{$('#board').innerHTML=
-      (this.runs.length?`<div class="lbl">⏳ ถาดที่รอรวม</div><div class="row wait">${this.runs.map(r=>`<div class="grp">${r.map(v=>cardHTML(v,{mini:1,maxV:20})).join('')}</div>`).join('')}</div>`:'')+
-      `<div class="lbl">กดหัวแถวของถาดที่ "น้อยกว่า"</div>
-       <div class="duo"><div class="q"><div class="qn">ถาด A</div><div class="row">${mk(this.A,'A')}</div></div>
-       <div class="q"><div class="qn">ถาด B</div><div class="row">${mk(this.B,'B')}</div></div></div>
-       <div class="lbl">📦 ถาดผลลัพธ์</div><div class="row">${this.out.map(v=>cardHTML(v,{maxV:20,cls:'static lock'})).join('')}</div>`;});
-    $('#ctrl').innerHTML=`<button class="btn" onclick="cur.hint()">💡 คำใบ้ (−20)</button><button class="btn ghost" onclick="cur.reset()">↩️ เริ่มใหม่</button>`;
-  },
-  click(e){
-    const c=e.target.closest('[data-q]'); if(!c||this.final)return;
-    const q=c.dataset.q;
-    if(q!==mergeChoice(this.A,this.B)){                                // ตรวจคำตอบด้วย merge logic
-      this.hearts--;shake();this.hp=null;this.render();
-      say(`ไม่ใช่ค่ะ! หัวแถว A = <b>${this.A}</b>, B = <b>${this.B}</b> → ต้องหยิบตัวที่ <b>น้อยกว่า</b> 😢`);
-      if(this.hearts<=0)later(()=>lose('หัวใจหมดแล้ว! หลักของ merge คือ เทียบหัวแถวสองฝั่ง ตัวน้อยกว่าไปก่อนเสมอค่ะ'));
+    const n=this.start.length, L=Math.log2(n);
+    const pieceHTML=(p,pre,cls='')=>`<div class="grp ${cls}">${p.map(v=>cardHTML(v,{mini:1,maxV:20,p:pre})).join('')}</div>`;
+
+    /* ----- ขั้นที่ 1: แสดงต้นไม้การแบ่งทีละระดับ ----- */
+    if(this.phase==='divide'){
+      $('#info').innerHTML=chip(`✂️ ขั้นแบ่ง`)+chip(`ระดับการแบ่ง <b>${this.lvl}</b>/${L}`);
+      let h=`<div class="lbl">✂️ แบ่งครึ่งไปเรื่อย ๆ จนเหลือถาดละ 1 แก้ว</div>`;
+      for(let l=0;l<=this.lvl;l++){
+        const size=n>>l, pieces=[];
+        for(let s=0;s<n;s+=size) pieces.push(this.start.slice(s,s+size));
+        h+=`<div class="row wait">${pieces.map(p=>pieceHTML(p,'d'+l)).join('')}</div>`;
+      }
+      flip(()=>{$('#board').innerHTML=h;});
+      $('#ctrl').innerHTML=this.lvl<L
+        ?`<button class="btn" onclick="cur.divide()">✂️ แบ่งครึ่ง</button><button class="btn ghost" onclick="cur.reset()">↩️ เริ่มใหม่</button>`
+        :`<button class="btn big" onclick="cur.startMerge()">🔀 เริ่มรวมถาด (Merge)</button>`;
       return;
     }
-    this.out.push(this[q].shift());this.hp=null;
-    if(!this.A.length||!this.B.length){                                // ถาดหนึ่งหมด → ต่อท้ายที่เหลือได้เลย (ไม่ต้องเทียบ)
-      const rest=this.A.length?this.A:this.B;
-      if(rest.length)say(`ถาดหนึ่งหมดแล้ว! ที่เหลือ (${rest.join(', ')}) เรียงอยู่แล้ว ต่อท้ายได้เลยโดยไม่ต้องเทียบ ✨`);
-      this.out.push(...rest);this.A=[];this.B=[];
+
+    /* ----- ขั้นที่ 2: ผู้เล่นรวมถาดทีละคู่ ----- */
+    const t=this.plan[Math.min(this.ti,this.plan.length-1)];
+    const level=Math.log2(t.hi-t.lo);            // ชั้นที่ 1 = รวม 1+1, ชั้น 2 = 2+2, ชั้น 3 = 4+4
+    $('#info').innerHTML=chip(`❤️ ${hearts(this.hearts,4)}`)+chip(`🔀 ชั้น <b>${level}</b>/${L}`)
+      +chip(`รวมครั้งที่ <b>${Math.min(this.ti+1,this.plan.length)}</b>/${this.plan.length}`)+chip(`💡 ใช้คำใบ้ ${this.hints}`);
+
+    // การ์ดแรกของถาด = "หัวแถว" (ขอบประ) ส่วน data-q อยู่ที่ตัวถาด กดตรงไหนของถาดก็ได้
+    const mk=(arr,q)=>arr.length
+      ? arr.map((v,i)=>cardHTML(v,{maxV:20,cls:(i===0?'front ':'static ')+(this.hp===q&&i===0?'hint':'')})).join('')
+      : '<span class="lbl">(หมดแล้ว)</span>';
+    const tray=(arr,q)=>`<div class="q ${arr.length?'pick':''}" ${arr.length?`data-q="${q}"`:''}>
+      <div class="qn">ถาด ${q}</div><div class="row">${mk(arr,q)}</div></div>`;
+
+    // แถบเทียบหัวแถว: แสดงเฉพาะ "เลขหัวแถว" ของแต่ละถาด
+    const bar=(this.A.length&&this.B.length)
+      ?`<div class="cmpbar">หัวแถว A = <b>${head(this.A)}</b> &nbsp;⚖️&nbsp; หัวแถว B = <b>${head(this.B)}</b><br><small>ตัวไหนน้อยกว่า → กดถาดนั้น</small></div>`
+      :'';
+
+    // ภาพรวม: ถาดทั้งหมดตอนนี้ (สองถาดที่กำลังรวมจะถูกไฮไลต์)
+    const overview=this.groups.map((g,k)=>pieceHTML(g,'o',(!this.final&&(k===this.idx||k===this.idx+1))?'act':'')).join('');
+
+    flip(()=>{$('#board').innerHTML=
+      `<div class="lbl">🗂️ ถาดทั้งหมดตอนนี้ (กรอบชมพู = สองถาดที่กำลังรวม)</div><div class="row wait">${overview}</div>`
+      +bar
+      +`<div class="duo">${tray(this.A,'A')}${tray(this.B,'B')}</div>
+        <div class="lbl">📦 ถาดผลลัพธ์ (เรียงน้อย → มาก)</div>
+        <div class="row">${this.out.length?this.out.map(v=>cardHTML(v,{maxV:20,cls:'static lock'})).join(''):'<span class="lbl">(ยังว่าง)</span>'}</div>`;});
+    $('#ctrl').innerHTML=`<button class="btn" onclick="cur.hint()">💡 คำใบ้ (−20)</button><button class="btn ghost" onclick="cur.reset()">↩️ เริ่มใหม่</button>`;
+  },
+
+  click(e){
+    if(this.phase!=='merge'||this.final) return;
+    const c=e.target.closest('[data-q]'); if(!c) return;
+    if(!this.A.length||!this.B.length) return;               // ถาดไหนหมดแล้วไม่รับคลิก
+
+    const q=c.dataset.q, o=(q==='A')?'B':'A';
+    const hq=head(this[q]), ho=head(this[o]);                // เลขหัวแถวของถาดที่กด / ถาดอีกฝั่ง
+
+    if(q!==mergeChoice(this.A,this.B)){                      // ตรวจคำตอบด้วย logic ของ merge จริง
+      this.hearts--; shake(); this.hp=null; this.render();
+      say(`ยังไม่ใช่ค่ะ! หัวแถว A = <b>${head(this.A)}</b>, B = <b>${head(this.B)}</b> → ต้องหยิบตัวที่ <b>น้อยกว่า</b> คือ <b>${Math.min(head(this.A),head(this.B))}</b> 😢`);
+      if(this.hearts<=0) later(()=>lose('หัวใจหมดแล้ว! หลักของ merge คือ เทียบ "หัวแถว" สองฝั่ง ตัวที่น้อยกว่าไปก่อนเสมอค่ะ'));
+      return;
     }
-    if(!this.A.length&&!this.B.length){
-      this.runs.push(this.out);this.out=[];
-      if(this.runs.length===1){                                       // เหลือถาดเดียว = เสร็จ
-        this.final=true;this.out=this.runs;this.runs=[];this.render();
-        later(()=>win(Math.min(3,Math.max(1,this.hearts)),`Merge Sort แบ่งเป็นชิ้นเล็ก เรียงแล้วรวมเป็นชั้น ๆ ใช้เวลา <b>O(n log n)</b> เร็วกว่า O(n²) มากเมื่อข้อมูลเยอะ คุณเหลือหัวใจ ${this.hearts} ดวง`));
+
+    this.out.push(this[q].shift()); this.hp=null;            // หยิบหัวแถวที่น้อยกว่าลงถาดผลลัพธ์
+    say(`ถูกต้อง! <b>${hq}</b> น้อยกว่า <b>${ho}</b> → หยิบ ${hq} ลงถาดผลลัพธ์ ✨`);
+
+    if(!this.A.length||!this.B.length){                      // ถาดหนึ่งหมด → ต่อท้ายส่วนที่เหลือได้เลย
+      const rest=this.A.length?this.A:this.B;
+      if(rest.length) say(`ถาดหนึ่งหมดแล้ว! ที่เหลือ (<b>${rest.join(', ')}</b>) เรียงอยู่แล้ว ต่อท้ายได้เลยโดยไม่ต้องเทียบ ✨`);
+      this.out.push(...rest); this.A=[]; this.B=[];
+    }
+
+    if(!this.A.length&&!this.B.length){                      // รวมคู่นี้เสร็จ
+      this.groups.splice(this.idx,2,this.out);               // สองถาดกลายเป็นถาดเดียวที่เรียงแล้ว
+      this.out=[]; this.ti++;
+
+      if(this.ti>=this.plan.length){                         // เหลือถาดเดียว = เสร็จทั้งหมด
+        this.final=true;
+        this.out=this.groups.flat();                         // เอาสมาชิกในถาดเดียวที่เหลือมาแสดง
+        this.render();
+        const ok=this.out.join()===mergeSort(this.start).join();   // ตรวจซ้ำกับ mergeSort จริง
+        later(()=>win(Math.min(3,Math.max(1,this.hearts)),
+          `เรียงเสร็จ${ok?'ถูกต้อง':''}! Merge Sort แบ่งครึ่งจนเหลือ 1 แก้ว แล้วรวมกลับทีละชั้น (${Math.log2(this.start.length)} ชั้น) แต่ละชั้นดูแต่ละแก้วแค่ครั้งเดียว จึงใช้เวลา <b>O(n log n)</b> ข้อมูล 8 ตัวเทียบประมาณ 8×3 = 24 แทนที่จะเป็น 8×8 = 64 แบบ O(n²) คุณเหลือหัวใจ ${this.hearts} ดวง`));
         return;
       }
-      this.A=this.runs.shift();this.B=this.runs.shift();this.m++;
-      say('รวมเสร็จหนึ่งถาด! ต่อไปรวมถาดคู่ถัดไปค่ะ 🍵');
+
+      const prev=Math.log2(this.plan[this.ti-1].hi-this.plan[this.ti-1].lo);
+      this.loadTask();
+      const now=Math.log2(this.plan[this.ti].hi-this.plan[this.ti].lo);
+      say(now>prev?`จบชั้น ${prev} แล้ว! ขึ้นชั้น ${now}: ถาดใหญ่ขึ้นแต่ทุกถาด "เรียงแล้ว" วิธีรวมเหมือนเดิมเป๊ะ 🍵`
+                  :'รวมเสร็จหนึ่งถาด! ต่อไปรวมถาดคู่ถัดไปค่ะ 🍵');
     }
     this.render();
   },
-  hint(){if(this.final)return;this.hints++;this.hp=mergeChoice(this.A,this.B);this.render();say('ตัวที่กะพริบคือหัวแถวที่น้อยกว่า หยิบได้เลยค่ะ 💡');}
+
+  hint(){
+    if(this.phase!=='merge'||this.final||!this.A.length||!this.B.length) return;
+    this.hints++; this.hp=mergeChoice(this.A,this.B); this.render();
+    say(`เทียบ ${head(this.A)} กับ ${head(this.B)} → ตัวที่กะพริบน้อยกว่า หยิบได้เลยค่ะ 💡`);
+  }
 });
 
 /* ---------- ด่าน 5: นักสืบอัลกอริทึม ---------- */
